@@ -1,5 +1,5 @@
 # Homework 2: B+ Trees
-**Due 2:00 PM Tuesday, September 26**
+**Due 11:59 PM Thursday, February 22**
 
 ## Overview
 In this assignment, you will implement persistent B+ trees in Java. In this

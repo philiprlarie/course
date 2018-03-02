@@ -121,7 +121,16 @@ In the `table` directory, fill in the classes `Table#RIDPageIterator` and `Table
 
 #### 2. Nested Loops Joins
 
-Move to the `query` directory. You may first want to take a look at `SNLJOperator`. Complete `PNLJOperator` and `BNLJOperator`. The PNLJ and BNLJ tests in `TestJoinOperator` should pass once this is complete.
+Move to the `query` directory. You may first want to take a look at `SNLJOperator` (SNLJ: Simple Nested Loop Join).
+
+##### 2.a Page Nested Loop Join
+Complete `PNLJOperator.java`. Further instructions in source code.
+
+##### 2.b Block Nested Loop Join
+Complete `BNLJOperator.java`. Further instructions in source code. 
+
+
+The PNLJ and BNLJ tests in `TestJoinOperator` should pass once this is complete.
 
 #### 3: External Sort
 

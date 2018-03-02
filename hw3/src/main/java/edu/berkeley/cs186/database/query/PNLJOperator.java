@@ -36,6 +36,9 @@ public class PNLJOperator extends JoinOperator {
 
 
   /**
+   * PNLJ: Page Nested Loop Join
+   *  See lecture slides.
+   *
    * An implementation of Iterator that provides an iterator interface for this operator.
    *
    * Before proceeding, you should read and understand SNLJOperator.java

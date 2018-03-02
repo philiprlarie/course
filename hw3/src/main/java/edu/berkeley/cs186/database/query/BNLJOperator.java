@@ -39,6 +39,9 @@ public class BNLJOperator extends JoinOperator {
 
 
   /**
+   * BNLJ: Block Nested Loop Join
+   *  See lecture slides.
+   *
    * An implementation of Iterator that provides an iterator interface for this operator.
    *
    * Before proceeding, you should read and understand SNLJOperator.java

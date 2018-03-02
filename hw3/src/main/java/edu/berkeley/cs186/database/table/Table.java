@@ -442,8 +442,6 @@ public class Table implements Iterable<Record>, Closeable {
      * implement your own solution using whatever helper methods you would like.
      */
 
-    //private void fetchNextRecordId() {}
-
     public RIDPageIterator(Page page) {
       throw new UnsupportedOperationException("hw3: TODO");
     }

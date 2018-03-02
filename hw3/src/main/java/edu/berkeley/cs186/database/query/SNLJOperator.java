@@ -42,6 +42,9 @@ public class SNLJOperator extends JoinOperator {
   }
 
   /**
+   * SNLJ: Simple Nested Loop Join
+   *  See lecture slides.
+   *
    * An implementation of Iterator that provides an iterator interface for this operator.
    * Note that the left table is the "outer" loop and the right table is the "inner" loop.
    */

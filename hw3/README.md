@@ -1,5 +1,5 @@
 # Homework 3: Iterators and Join Algorithms
-**Due 11:59 PM PST Tuesday, March 13, 2018**
+**Due 11:59 PM PST Thursday, March 15, 2018**
 
 ## Overview
 In this assignment, you will implement iterators  and join algorithms over tables in Java. In this

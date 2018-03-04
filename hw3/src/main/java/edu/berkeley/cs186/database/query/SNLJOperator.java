@@ -1,9 +1,6 @@
 package edu.berkeley.cs186.database.query;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 import edu.berkeley.cs186.database.Database;
 import edu.berkeley.cs186.database.DatabaseException;
@@ -26,11 +23,11 @@ public class SNLJOperator extends JoinOperator {
                       String rightColumnName,
                       Database.Transaction transaction) throws QueryPlanException, DatabaseException {
     super(leftSource,
-          rightSource,
-          leftColumnName,
-          rightColumnName,
-          transaction,
-          JoinType.SNLJ);
+            rightSource,
+            leftColumnName,
+            rightColumnName,
+            transaction,
+            JoinType.SNLJ);
 
     this.leftColumnName = getLeftColumnName();
     this.rightColumnName = getRightColumnName();
@@ -42,9 +39,6 @@ public class SNLJOperator extends JoinOperator {
   }
 
   /**
-   * SNLJ: Simple Nested Loop Join
-   *  See lecture slides.
-   *
    * An implementation of Iterator that provides an iterator interface for this operator.
    * Note that the left table is the "outer" loop and the right table is the "inner" loop.
    */
@@ -54,19 +48,24 @@ public class SNLJOperator extends JoinOperator {
     private Record leftRecord;
     private Record rightRecord;
     private Record nextRecord;
+    private LR_RecordComparator lrc;
 
     public SNLJIterator() throws QueryPlanException, DatabaseException {
       super();
       this.leftIterator = SNLJOperator.this.getRecordIterator(this.getRightTableName());
       this.rightIterator = SNLJOperator.this.getRecordIterator(this.getLeftTableName());
+      this.lrc = new LR_RecordComparator();
 
       this.nextRecord = null;
 
       this.leftRecord = leftIterator.hasNext() ? leftIterator.next() : null;
       this.rightRecord = rightIterator.hasNext() ? rightIterator.next() : null;
+
+      // We mark the first record so we can reset to it when we advance the left record.
       if (rightRecord != null) {
         rightIterator.mark();
       }
+      else return;
 
       try {
         fetchNextRecord();
@@ -80,7 +79,7 @@ public class SNLJOperator extends JoinOperator {
      * There is always a first record. If there were no first records (empty rightSource)
      * then the code would not have made it this far. See line 69.
      */
-    private void resetRightRecord() {
+    private void resetRightRecord(){
       this.rightIterator.reset();
       assert(rightIterator.hasNext());
       rightRecord = rightIterator.next();
@@ -110,10 +109,12 @@ public class SNLJOperator extends JoinOperator {
       this.nextRecord = null;
       do {
         if (this.rightRecord != null) {
-          List<DataBox> leftValues = new ArrayList<>(this.leftRecord.getValues());
-          List<DataBox> rightValues = new ArrayList<>(rightRecord.getValues());
-          leftValues.addAll(rightValues);
-          this.nextRecord = new Record(leftValues);
+          if (lrc.compare(leftRecord, rightRecord) == 0) {
+            List<DataBox> leftValues = new ArrayList<>(this.leftRecord.getValues());
+            List<DataBox> rightValues = new ArrayList<>(rightRecord.getValues());
+            leftValues.addAll(rightValues);
+            this.nextRecord = new Record(leftValues);
+          }
           this.rightRecord = rightIterator.hasNext() ? rightIterator.next() : null;
         }
         else {
@@ -121,8 +122,6 @@ public class SNLJOperator extends JoinOperator {
           resetRightRecord();
         }
       } while (!hasNext());
-
-
     }
 
     /**
@@ -157,5 +156,15 @@ public class SNLJOperator extends JoinOperator {
     public void remove() {
       throw new UnsupportedOperationException();
     }
+
+    private class LR_RecordComparator implements Comparator<Record> {
+      public int compare(Record o1, Record o2) {
+        return o1.getValues().get(SNLJOperator.this.getLeftColumnIndex()).compareTo(
+                o2.getValues().get(SNLJOperator.this.getRightColumnIndex()));
+      }
+    }
+
   }
+
+
 }

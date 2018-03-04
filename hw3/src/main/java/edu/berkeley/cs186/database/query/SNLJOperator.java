@@ -48,13 +48,11 @@ public class SNLJOperator extends JoinOperator {
     private Record leftRecord;
     private Record rightRecord;
     private Record nextRecord;
-    private LR_RecordComparator lrc;
 
     public SNLJIterator() throws QueryPlanException, DatabaseException {
       super();
       this.leftIterator = SNLJOperator.this.getRecordIterator(this.getRightTableName());
       this.rightIterator = SNLJOperator.this.getRecordIterator(this.getLeftTableName());
-      this.lrc = new LR_RecordComparator();
 
       this.nextRecord = null;
 
@@ -101,7 +99,7 @@ public class SNLJOperator extends JoinOperator {
 
     /**
      * Pre-fetches what will be the next record, and puts it in this.nextRecord.
-     * Pre-fetching simplifies the logic of this.hasNext() and this.next(0
+     * Pre-fetching simplifies the logic of this.hasNext() and this.next()
      * @throws DatabaseException
      */
     private void fetchNextRecord() throws DatabaseException {
@@ -109,7 +107,9 @@ public class SNLJOperator extends JoinOperator {
       this.nextRecord = null;
       do {
         if (this.rightRecord != null) {
-          if (lrc.compare(leftRecord, rightRecord) == 0) {
+          DataBox leftJoinValue = this.leftRecord.getValues().get(SNLJOperator.this.getLeftColumnIndex());
+          DataBox rightJoinValue = rightRecord.getValues().get(SNLJOperator.this.getRightColumnIndex());
+          if (leftJoinValue.equals(rightJoinValue)) {
             List<DataBox> leftValues = new ArrayList<>(this.leftRecord.getValues());
             List<DataBox> rightValues = new ArrayList<>(rightRecord.getValues());
             leftValues.addAll(rightValues);
@@ -157,14 +157,6 @@ public class SNLJOperator extends JoinOperator {
       throw new UnsupportedOperationException();
     }
 
-    private class LR_RecordComparator implements Comparator<Record> {
-      public int compare(Record o1, Record o2) {
-        return o1.getValues().get(SNLJOperator.this.getLeftColumnIndex()).compareTo(
-                o2.getValues().get(SNLJOperator.this.getRightColumnIndex()));
-      }
-    }
-
   }
-
 
 }

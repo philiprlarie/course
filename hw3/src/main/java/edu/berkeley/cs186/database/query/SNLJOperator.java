@@ -51,8 +51,8 @@ public class SNLJOperator extends JoinOperator {
 
     public SNLJIterator() throws QueryPlanException, DatabaseException {
       super();
-      this.leftIterator = SNLJOperator.this.getRecordIterator(this.getRightTableName());
-      this.rightIterator = SNLJOperator.this.getRecordIterator(this.getLeftTableName());
+      this.rightIterator = SNLJOperator.this.getRecordIterator(this.getRightTableName());
+      this.leftIterator = SNLJOperator.this.getRecordIterator(this.getLeftTableName());
 
       this.nextRecord = null;
 

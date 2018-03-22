@@ -196,7 +196,7 @@ public class TestInterestingOrders {
 
     assertFalse(interestingOrders.isEmpty());
     assert(interestingOrders.containsKey("t1"));
-    assertEquals(interestingOrders.get("t1").size(), 2);
+    assertEquals(2, interestingOrders.get("t1").size());
   }
 
   @Test
@@ -237,8 +237,8 @@ public class TestInterestingOrders {
     assertFalse(interestingOrders.isEmpty());
     assert(interestingOrders.containsKey("t1"));
     assert(interestingOrders.containsKey("t2"));
-    assertEquals(interestingOrders.get("t1").size(), 2);
-    assertEquals(interestingOrders.get("t2").size(), 1);
+    assertEquals(2, interestingOrders.get("t1").size());
+    assertEquals(1, interestingOrders.get("t2").size());
   }
 
   @Test

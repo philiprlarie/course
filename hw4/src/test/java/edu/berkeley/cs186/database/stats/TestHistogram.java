@@ -102,14 +102,15 @@ public class TestHistogram {
     Histogram h = new Histogram(10);
     h.buildHistogram(table, 1); //build on the integer col
 
-    assertEquals(h.getCount(),101); //count updated properly
+    assertEquals(101, h.getCount());
     
-    assertEquals(h.getNumDistinct(),101); //distinct count updated properly
+    assertEquals(101, h.getNumDistinct());
 
     for (int i=0; i<9; i++)
-      assertEquals(h.get(i).getCount(),10);
+      assertEquals(10, h.get(i).getCount());
 
-    assertEquals(h.get(9).getCount(),11);
+
+    assertEquals(11, h.get(9).getCount());
   }
 
   @Test
@@ -128,9 +129,9 @@ public class TestHistogram {
     Histogram h = new Histogram(10);
     h.buildHistogram(table, 2); //build on the integer col
 
-    assertEquals(h.getCount(),101); //count updated properly
+    assertEquals(101, h.getCount()); //count updated properly
 
-    assertEquals(h.getNumDistinct(),101); //distinct count updated properly
+    assertEquals(101, h.getNumDistinct()); //distinct count updated properly
   }
 
   @Test
@@ -149,14 +150,14 @@ public class TestHistogram {
     Histogram h = new Histogram(10);
     h.buildHistogram(table, 1); //build on the integer col
 
-    assertEquals(h.getCount(),101); //count updated properly
+    assertEquals(101, h.getCount()); //count updated properly
     
-    assertEquals(h.getNumDistinct(),1); //distinct count updated properly
+    assertEquals(1, h.getNumDistinct()); //distinct count updated properly
 
     for (int i=0; i<9; i++)
-      assertEquals(h.get(i).getCount(),0);
+      assertEquals(0, h.get(i).getCount());
 
-    assertEquals(h.get(9).getCount(),101);
+    assertEquals(101, h.get(9).getCount());
   }
 
 

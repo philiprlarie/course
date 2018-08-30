@@ -1,0 +1,55 @@
+16a17,19
+>  Baby Doll    | Jacobson     |      1890
+>  Big Jeff     | Pfeffer      |      1882
+>  Billy Jo     | Robidoux     |      1964
+21,23d23
+<  Baby Doll    | Jacobson     |      1890
+<  Big Jeff     | Pfeffer      |      1882
+<  Billy Jo     | Robidoux     |      1964
+28a29,30
+>  Chan Ho      | Park         |      1973
+>  Chi Chi      | Gonzalez     |      1992
+34,36d35
+<  C. V.        | Matteson     |      1861
+<  Chan Ho      | Park         |      1973
+<  Chi Chi      | Gonzalez     |      1992
+37a37
+>  C. V.        | Matteson     |      1861
+48d47
+<  J C          | Hartman      |      1934
+49a49,50
+>  Jae Kuk      | Ryu          |      1983
+>  Jae Weong    | Seo          |      1977
+52a54
+>  J C          | Hartman      |      1934
+62a65,67
+>  Jerry Don    | Gleaton      |      1957
+>  Jim Ray      | Hart         |      1941
+>  Jin Ho       | Cho          |      1975
+70a76
+>  John Henry   | Johnson      |      1956
+83,88d88
+<  Jae Kuk      | Ryu          |      1983
+<  Jae Weong    | Seo          |      1977
+<  Jerry Don    | Gleaton      |      1957
+<  Jim Ray      | Hart         |      1941
+<  Jin Ho       | Cho          |      1975
+<  John Henry   | Johnson      |      1956
+91d90
+<  L. J.        | Hoes         |      1990
+93a93
+>  L. J.        | Hoes         |      1990
+96,97d95
+<  P. J.        | Forbes       |      1967
+<  P. J.        | Walters      |      1985
+100c98,99
+<  R C          | Stevens      |      1934
+---
+>  P. J.        | Forbes       |      1967
+>  P. J.        | Walters      |      1985
+101a101
+>  R C          | Stevens      |      1934
+111a112
+>  The Only     | Nolan        |      1857
+120d120
+<  The Only     | Nolan        |      1857

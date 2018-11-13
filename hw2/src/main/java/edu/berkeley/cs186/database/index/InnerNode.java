@@ -70,20 +70,64 @@ class InnerNode extends BPlusNode {
   // See BPlusNode.get.
   @Override
   public LeafNode get(DataBox key) {
-    throw new UnsupportedOperationException("TODO(hw2): implement.");
+    return getChild(numLessThanEqual(key, keys)).get(key);
   }
 
   // See BPlusNode.getLeftmostLeaf.
   @Override
   public LeafNode getLeftmostLeaf() {
-    throw new UnsupportedOperationException("TODO(hw2): implement.");
+    return getChild(0).getLeftmostLeaf();
   }
 
   // See BPlusNode.put.
   @Override
   public Optional<Pair<DataBox, Integer>> put(DataBox key, RecordId rid)
       throws BPlusTreeException {
-    throw new UnsupportedOperationException("TODO(hw2): implement.");
+    Optional<Pair<DataBox, Integer>> childResult = getChild(numLessThanEqual(key, keys)).put(key, rid);
+
+    addNewChild(childResult);
+
+    if (getKeys().size() > metadata.getOrder() * 2) {
+      return Optional.of(splitInnerNode(getKeys().size() / 2));
+    }
+
+    this.sync();
+    return Optional.empty();
+  }
+
+  private void addNewChild(Optional<Pair<DataBox, Integer>> childResult) {
+    if (childResult.isPresent()) {
+      DataBox newChildKey = childResult.get().getFirst();
+      Integer newChildPage = childResult.get().getSecond();
+      int index = numLessThanEqual(newChildKey, keys);
+      getKeys().add(index, newChildKey);
+      getChildren().add(index + 1, newChildPage);
+    }
+  }
+
+  private Pair<DataBox, Integer> splitInnerNode(int splitIndex)
+    throws BPlusTreeException {
+    int lastIndex = getKeys().size();
+    if (splitIndex <= 0 || splitIndex > lastIndex) {
+      throw new BPlusTreeException("Index out of bounds: " + Integer.toString(splitIndex));
+    }
+
+    DataBox middleKey = getKeys().get(splitIndex);
+    List<DataBox> leftKeys = getKeys().subList(0, splitIndex);
+    List<Integer> leftChildren = getChildren().subList(0, splitIndex + 1);
+    List<DataBox> rightKeys = keys.subList(splitIndex + 1, lastIndex);
+    List<Integer> rightChildren = getChildren().subList(splitIndex + 1, lastIndex + 1);
+
+    this.keys = leftKeys;
+    this.children = leftChildren;
+    InnerNode rightSibling = new InnerNode(metadata, rightKeys, rightChildren);
+
+    Integer rightPageNum = rightSibling.getPage().getPageNum();
+
+    this.sync();
+    rightSibling.sync();
+
+    return new Pair<>(middleKey, rightPageNum);
   }
 
   // See BPlusNode.bulkLoad.
@@ -91,13 +135,25 @@ class InnerNode extends BPlusNode {
   public Optional<Pair<DataBox, Integer>> bulkLoad(Iterator<Pair<DataBox, RecordId>> data,
                                                    float fillFactor)
       throws BPlusTreeException {
-    throw new UnsupportedOperationException("TODO(hw2): implement.");
+
+    while (data.hasNext()) {
+      Optional<Pair<DataBox, Integer>> childResult = getChild(children.size() - 1).bulkLoad(data, fillFactor);
+
+      addNewChild(childResult);
+
+      if (getKeys().size() > metadata.getOrder() * 2) {
+        return Optional.of(splitInnerNode(getKeys().size() / 2));
+      }
+    }
+
+    this.sync();
+    return Optional.empty();
   }
 
   // See BPlusNode.remove.
   @Override
   public void remove(DataBox key) {
-    throw new UnsupportedOperationException("TODO(hw2): implement.");
+    get(key).remove(key);
   }
 
   // Helpers ///////////////////////////////////////////////////////////////////

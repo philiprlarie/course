@@ -156,7 +156,9 @@ public class BPlusTree {
      */
     public Optional<RecordId> get(DataBox key) {
       typecheck(key);
-      throw new UnsupportedOperationException("TODO(hw2): implement.");
+      LeafNode leaf = root.get(key);
+
+      return leaf.getKey(key);
     }
 
     /**
@@ -204,8 +206,7 @@ public class BPlusTree {
      * memory will receive 0 points.
      */
     public Iterator<RecordId> scanAll() {
-      throw new UnsupportedOperationException("TODO(hw2): implement.");
-      // TODO(hw2): Return a BPlusTreeIterator.
+      return new BPlusTreeIterator(this);
     }
 
     /**
@@ -234,8 +235,7 @@ public class BPlusTree {
      */
     public Iterator<RecordId> scanGreaterEqual(DataBox key) {
       typecheck(key);
-      throw new UnsupportedOperationException("TODO(hw2): implement.");
-      // TODO(hw2): Return a BPlusTreeIterator.
+      return new BPlusTreeIterator(this, key);
     }
 
     /**
@@ -250,9 +250,26 @@ public class BPlusTree {
      */
     public void put(DataBox key, RecordId rid) throws BPlusTreeException {
       typecheck(key);
-      throw new UnsupportedOperationException("TODO(hw2): implement.");
+      Optional<Pair<DataBox, Integer>> childResult = this.root.put(key, rid);
+
+      splitRoot(childResult);
     }
 
+
+    private void splitRoot(Optional<Pair<DataBox, Integer>> childResult) {
+      if (childResult.isPresent()) {
+        List<DataBox> newKeyArr = new ArrayList<>();
+        newKeyArr.add(childResult.get().getFirst());
+
+        List<Integer> newChildren = new ArrayList<>();
+        newChildren.add(root.getPage().getPageNum());
+        newChildren.add(childResult.get().getSecond());
+
+        root = new InnerNode(metadata, newKeyArr, newChildren);
+        headerPage.wipe();
+        writeHeader(headerPage.getByteBuffer());
+      }
+    }
     /**
      * Bulk loads data into the B+ tree. Tree should be empty and the data
      * iterator should be in sorted order (by the DataBox key field) and
@@ -269,7 +286,15 @@ public class BPlusTree {
      * bulkLoad (see comments in BPlusNode.bulkLoad).
      */
     public void bulkLoad(Iterator<Pair<DataBox, RecordId>> data, float fillFactor) throws BPlusTreeException {
-      throw new UnsupportedOperationException("TODO(hw2): implement.");
+      if (!root.getLeftmostLeaf().getKeys().isEmpty()) {
+        throw new BPlusTreeException("Tree must start empty for bulk loading");
+      }
+
+      while (data.hasNext()) {
+        Optional<Pair<DataBox, Integer>> childResult = this.root.bulkLoad(data, fillFactor);
+
+        splitRoot(childResult);
+      }
     }
 
     /**
@@ -286,7 +311,7 @@ public class BPlusTree {
      */
     public void remove(DataBox key) {
       typecheck(key);
-      throw new UnsupportedOperationException("TODO(hw2): implement.");
+      this.root.get(key).remove(key);
     }
 
     // Helpers /////////////////////////////////////////////////////////////////
@@ -385,16 +410,57 @@ public class BPlusTree {
 
     // Iterator ////////////////////////////////////////////////////////////////
     private class BPlusTreeIterator implements Iterator<RecordId> {
-      // TODO(hw2): Add whatever fields and constructors you want here.
+      BPlusTree tree;
+      LeafNode currentNode;
+      Iterator<RecordId> currentIterator;
+      RecordId nextRecord = null;
+
+      BPlusTreeIterator(BPlusTree tree) {
+        this.tree = tree;
+        this.currentNode = tree.root.getLeftmostLeaf();
+        this.currentIterator = currentNode.scanAll();
+
+        setNextRecord();
+      }
+
+      BPlusTreeIterator(BPlusTree tree, DataBox key) {
+        this.tree = tree;
+        this.currentNode = tree.root.get(key);
+        this.currentIterator = currentNode.scanGreaterEqual(key);
+
+        setNextRecord();
+      }
+
+
 
       @Override
       public boolean hasNext() {
-        throw new UnsupportedOperationException("TODO(hw2): implement.");
+        return nextRecord != null;
       }
 
       @Override
       public RecordId next() {
-        throw new UnsupportedOperationException("TODO(hw2): implement.");
+        if (!hasNext()) {
+          throw new NoSuchElementException();
+        }
+
+        RecordId currentRecord = nextRecord;
+        setNextRecord();
+        return currentRecord;
+      }
+
+      private void setNextRecord() {
+        if (currentIterator.hasNext()) {
+          nextRecord = currentIterator.next();
+        } else {
+          if (currentNode.getRightSibling().isPresent()) {
+            currentNode = currentNode.getRightSibling().get();
+            currentIterator = currentNode.scanAll();
+            setNextRecord();
+          } else {
+            nextRecord = null;
+          }
+        }
       }
     }
 }

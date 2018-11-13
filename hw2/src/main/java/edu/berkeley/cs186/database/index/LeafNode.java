@@ -132,20 +132,57 @@ class LeafNode extends BPlusNode {
   // See BPlusNode.get.
   @Override
   public LeafNode get(DataBox key) {
-    throw new UnsupportedOperationException("TODO(hw2): implement.");
+    return this;
   }
 
   // See BPlusNode.getLeftmostLeaf.
   @Override
   public LeafNode getLeftmostLeaf() {
-    throw new UnsupportedOperationException("TODO(hw2): implement.");
+    return this;
   }
 
   // See BPlusNode.put.
   @Override
   public Optional<Pair<DataBox, Integer>> put(DataBox key, RecordId rid)
       throws BPlusTreeException {
-    throw new UnsupportedOperationException("TODO(hw2): implement.");
+    int index = InnerNode.numLessThan(key, keys);
+    if (getKeys().indexOf(key) >= 0) {
+      throw new BPlusTreeException("Duplicate keys not supported");
+    }
+
+    getKeys().add(index, key);
+    getRids().add(index, rid);
+
+    if (getKeys().size() > metadata.getOrder() * 2) {
+      return Optional.of(splitLeafNode(getKeys().size() / 2));
+    }
+
+    this.sync();
+    return Optional.empty();
+  }
+
+  private Pair<DataBox, Integer> splitLeafNode(int splitIndex)
+    throws BPlusTreeException {
+    int lastIndex = getKeys().size();
+    if (splitIndex < 0 || splitIndex > lastIndex) {
+      throw new BPlusTreeException("Index out of bounds: " + Integer.toString(splitIndex));
+    }
+    List<DataBox> leftKeys = getKeys().subList(0, splitIndex);
+    List<RecordId> leftRids = getRids().subList(0, splitIndex);
+    List<DataBox> rightKeys = keys.subList(splitIndex, lastIndex);
+    List<RecordId> rightRids = rids.subList(splitIndex, lastIndex);
+
+    this.keys = leftKeys;
+    this.rids = leftRids;
+    LeafNode rightSibling = new LeafNode(this.metadata, rightKeys, rightRids, this.rightSibling);
+
+    Optional<Integer> rightPageNum = Optional.of(rightSibling.getPage().getPageNum());
+    this.rightSibling = rightPageNum;
+
+    this.sync();
+    rightSibling.sync();
+
+    return new Pair<>(rightKeys.get(0), rightPageNum.get());
   }
 
   // See BPlusNode.bulkLoad.
@@ -153,13 +190,37 @@ class LeafNode extends BPlusNode {
   public Optional<Pair<DataBox, Integer>> bulkLoad(Iterator<Pair<DataBox, RecordId>> data,
                                                    float fillFactor)
       throws BPlusTreeException {
-    throw new UnsupportedOperationException("TODO(hw2): implement.");
+    if (fillFactor > 1) {
+      throw new BPlusTreeException("Fill factor can't be greater than 1");
+    }
+
+    while (getKeys().size() < this.metadata.getOrder() * 2 * fillFactor + 1 && data.hasNext()) {
+      Pair<DataBox, RecordId> next = data.next();
+      if (!this.keys.isEmpty() && this.keys.get(this.keys.size() - 1).compareTo(next.getFirst()) >= 0) {
+        // if this leaf has a key and the last key is greater than the item in the iterator. The iterator is assumed to be sorted
+        throw new BPlusTreeException("Iterartor must be sorted");
+      }
+
+      this.keys.add(next.getFirst());
+      this.rids.add(next.getSecond());
+    }
+
+    if (getKeys().size() >= this.metadata.getOrder() * 2 * fillFactor + 1) {
+      return Optional.of(this.splitLeafNode(keys.size() - 1));
+    } else {
+      this.sync();
+      return Optional.empty();
+    }
   }
 
   // See BPlusNode.remove.
   @Override
   public void remove(DataBox key) {
-    throw new UnsupportedOperationException("TODO(hw2): implement.");
+    int index = keys.indexOf(key);
+    keys.remove(index);
+    rids.remove(index);
+
+    this.sync();
   }
 
   // Iterators /////////////////////////////////////////////////////////////////
@@ -335,7 +396,23 @@ class LeafNode extends BPlusNode {
    * meta.getAllocator().
    */
   public static LeafNode fromBytes(BPlusTreeMetadata metadata, int pageNum) {
-    throw new UnsupportedOperationException("TODO(hw2): implement.");
+    Page page = metadata.getAllocator().fetchPage(pageNum);
+    ByteBuffer buf = page.getByteBuffer();
+
+    assert(buf.get() == (byte) 1);
+
+    int rightSibling = buf.getInt();
+    Optional<Integer> rightSiblingOptional = rightSibling == -1 ? Optional.empty() : Optional.of(rightSibling);
+
+    List<DataBox> keys = new ArrayList<>();
+    List<RecordId> rids = new ArrayList<>();
+    int n = buf.getInt();
+    for (int i = 0; i < n; ++i) {
+      keys.add(DataBox.fromBytes(buf, metadata.getKeySchema()));
+      rids.add(RecordId.fromBytes(buf));
+    }
+
+    return new LeafNode(metadata, pageNum, keys, rids, rightSiblingOptional);
   }
 
   // Builtins //////////////////////////////////////////////////////////////////
